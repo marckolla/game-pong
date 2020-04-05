@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>jogo pong</title>
+    <style>
+        body{
+            margin: 0px;
+            background-color: #aaa;
+        }
+        #dvpainel{
+            display: flex;
+            height: 50px;
+            align-items: center;
+        }
+        .itempainel{
+            margin: 0px;
+        }
+        #dvjogo{
+            width: 960px;
+            height: 500px;
+            border: 1px solid #000;
+            background-color: #000;
+        }
+        #dvbola{
+            position: absolute;
+            top: 240px;
+            left: 475px;
+            width: 20px;
+            height: 20px;
+            background-color: #888;
+        }
+        .barra{
+            position: absolute;
+            width: 20px;
+            height: 140px;
+            background-color: #888;
+            top: 180px;
+        }
+        .esquerda{
+            left: 10px;
+        }
+        .direita{
+            left: 930px;
+        }
+        input{
+            margin-top: 10px;
+            margin-bottom: 10px;
+            background-color: #888;
+        }
+    
+    
+    </style>
+    <script>
+        var vbtiniciar;
+        var vbola;
+        var vcpu;
+        var vjogador;
+        var vpaineltxtpontos
+
+        //controle de animação
+        var game,frames;
+    
+        //posições
+        var posbolax,posbolay;
+        var posjogadorx = 10;
+        var posjogadory;
+        var poscpux = 930;
+        var poscpuy;
+        
+ 
+        //direção do teclado
+        var dirjy;
+
+        //posições iniciais
+
+        var posjoginiy = 180,poscpuiniy=180,posbolainix=475,posbolainiy=240;
+
+        //tamanhos
+        var campox = 0,campoy = 0,campow = 960,campoh = 500;
+        var barraw = 20,barrah = 140,bolaw = 20,bolah = 20;
+
+        //direção
+        var bolax,bolay;
+        var cpuy = 0;
+
+        //velocidade
+        var velbola,velcpu,veljogador;
+
+        //controle
+        var pontos = 0;
+        var tecla;
+        var jogo = false;
+
+        function controlajog(){
+            if(jogo){
+                posjogadory += veljogador * dirjy;
+                if(((posjogadory + barrah) >= campoh)||((posjogadory) <= 0)){
+                    posjogadory += (veljogador* dirjy)*(-1);
+                }
+                vjogador.style.top=posjogadory + "px";
+            }
+
+        }
+        function controlacpu(){
+            if(jogo){
+                if((posbolax > (campow / 2)) && (bolax > 0)){
+                    // movimentar cpu
+                    if(((posbolay + (bolah / 2)) > ((poscpuy + (barrah / 2))) + velcpu)){
+                        //mover para baixo
+                        if((poscpuy + barrah) <= campoh){
+                            poscpuy += velcpu;
+                        }else 
+                        if((posbolay + (bola / 2)) < (poscpuy + (barrah / 2)) - velcpu){
+                            //mover para cima
+                            if(poscpuy >= 0){
+                                poscpuy -= velcpu;
+                            }
+                        }
+                    }
+                }else{
+                    //posicionar cpu no centro
+                    if((poscpuy + (barrah / 2)) < (campoh / 2)){
+                        poscpuy += velcpu;
+                    }else 
+                    if((poscpuy + (barrah / 2)) > (campoh / 2)){
+                        poscpuy -= velcpu;
+                    }
+                }
+                vcpu.style.top=poscpuy + "px";
+            }
+        }
+        function controlabola(){
+            //movimentação bola
+            posbolax += velbola * bolax;
+            posbolay += velbola * bolay;
+            // colisão com jogador
+            if(
+                (posbolax <= (posjogadorx + barraw))&&
+                (((posbolay+bolah) >= posjogadory) && (posbolay <= (posjogadory+barrah)))
+            ){
+                
+                bolay = (((posbolay + (bolah/2)) - (posjogadory + (barrah/2)))/16);
+                bolax *= -1;
+
+            }else
+             // colisão com cpu
+             if((posbolax >= (poscpux-barraw)) && ((posbolay+bolah) <= poscpux)&&(posbolay <= 
+               (poscpuy+barrah))){
+                
+                bolay = (((posbolay + (bolah/2))-(poscpuy + (barrah/2)))/16);
+                bolax*= -1;
+            }else
+            // limites superior e inferior
+            if((posbolay >= 480) || (posbolay <= 0)){
+                bolay *= -1;
+            }else
+            //saiu da tela laterais (direita e esquerda)
+            if(posbolax >= (campow - bolaw)){
+                velbola = 0;
+                posbolax = posbolainix;
+                posbolay = posbolainiy;
+                posjogadory = posjoginiy;
+                poscpuy = poscpuiniy;
+                pontos++;
+                vpaineltxtpontos.value=pontos;
+                jogo = false;
+                vjogador.style.top=posjogadory + "px";
+                vcpu.style.top=poscpuy + "px";
+            }else
+            if(posbolax <= 0){
+                velbola = 0;
+                posbolax = posbolainix;
+                posbolay = posbolainiy;
+                posjogadory = posjoginiy;
+                poscpuy = poscpuiniy;
+                pontos--;
+                vpaineltxtpontos.value=pontos;
+                jogo = false;
+                vjogador.style.top=posjogadory + "px";
+                vcpu.style.top=poscpuy + "px";
+            }
+
+            vbola.style.top=posbolay + "px";
+            vbola.style.left=posbolax + "px";
+        }
+
+        function tecladw(){
+            tecla = event.keyCode;
+            if(tecla == 38){
+                dirjy =-1;
+            }else
+            if(tecla == 40){
+ 
+                dirjy =+1;
+            }
+        }
+        function teclaup(){
+            if(tecla == 38){
+                dirjy = 0;
+            }else
+            if(tecla == 40){
+                dirjy = 0;
+            }
+        }
+
+        function game(){
+            if(jogo){
+                
+                controlajog();
+                controlabola();
+                controlacpu()
+            }
+            frames = requestAnimationFrame(game);
+        }
+        function iniciajogo(){
+            if(!jogo){
+                velbola = velcpu = veljogador = 8;
+                cancelAnimationFrame(frames);
+                jogo = true;
+                dirjy = 0;
+                bolay = 0;
+                if((Math.random()* 10) < 5){
+                    bolax = -1
+                }else{
+                    bolax = 1
+                }
+                posbolax = posbolainix;
+                posbolay = posbolainiy;
+                posjogadory = posjoginiy;
+                poscpuy = poscpuiniy;
+                
+                game();
+            }
+        }
+
+        function inicializa(){
+            velbola = velcpu = veljogador = 8;
+            vbtiniciar = document.getElementById("btiniciar")
+            vbtiniciar.addEventListener("click",iniciajogo);
+            vjogador = document.getElementById("dvjogador");
+            vcpu = document.getElementById("dvcpu");
+            vbola = document.getElementById("dvbola");
+            vpaineltxtpontos = document.getElementById("txtpontos");
+            document.addEventListener("keydown",tecladw);
+            document.addEventListener("keyup",teclaup);
+           
+            
+
+        }
+        window.addEventListener("load",inicializa);
+        
+        
+        
+        
+    
+    
+    </script>
+</head>
+
+
+
+<body>
+    <div id="dvjogo">
+        <div id="dvbola"></div>
+        <div id="dvjogador" class="barra esquerda"> </div>
+        <div id="dvcpu" class="barra direita"></div>
+    </div>
+    <div>
+        <label>pontos</label>
+        <input type="text" id="txtpontos" value="0" size="10">
+    </div>
+    <div class="itempainel">
+        <button id="btiniciar">iniciar</button>
+    </div>
+    
+</body>
+
+</html>
